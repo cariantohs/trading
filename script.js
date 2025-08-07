@@ -1,20 +1,61 @@
-async function fetchPrice() {
-    try {
-        const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=XAUTUSDT');
-        const data = await response.json();
-        document.getElementById('price').innerText = `Harga: ${data.price} USDT`;
+const priceElement = document.getElementById("price");
+const analysisElement = document.getElementById("analysis");
+const priceChart = document.getElementById("priceChart").getContext("2d");
 
-        // Analisis sederhana
-        let analysisText = parseFloat(data.price) > 1000 ? "Harga tinggi, pertimbangkan untuk menjual." : "Harga rendah, ini bisa jadi kesempatan membeli.";
-        document.getElementById('analysis').innerText = analysisText;
-    } catch (error) {
-        console.error("Error fetching price:", error);
-        document.getElementById('price').innerText = "Gagal mengambil data.";
+let prices = [];
+let timestamps = [];
+
+const chart = new Chart(priceChart, {
+  type: 'line',
+  data: {
+    labels: timestamps,
+    datasets: [{
+      label: 'XAUT/USDT',
+      data: prices,
+      borderColor: 'blue',
+      borderWidth: 2,
+      fill: false
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { display: true, title: { display: true, text: 'Time' }},
+      y: { display: true, title: { display: true, text: 'Price (USDT)' }}
     }
+  }
+});
+
+async function fetchPrice() {
+  try {
+    const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=XAUTUSDT");
+    const data = await res.json();
+    const price = parseFloat(data.price);
+    const now = new Date().toLocaleTimeString();
+
+    // Update HTML
+    priceElement.textContent = `$${price.toFixed(2)}`;
+
+    // Update Chart
+    prices.push(price);
+    timestamps.push(now);
+    if (prices.length > 20) {
+      prices.shift();
+      timestamps.shift();
+    }
+    chart.update();
+
+    // Basic Analysis
+    if (prices.length >= 2) {
+      const trend = prices[prices.length - 1] > prices[0] ? "📈 Uptrend" : "📉 Downtrend";
+      analysisElement.textContent = `Trend: ${trend}`;
+    }
+  } catch (err) {
+    priceElement.textContent = "Error fetching price!";
+    console.error(err);
+  }
 }
 
-// Refresh data saat tombol klik
-document.getElementById('refreshButton').addEventListener('click', fetchPrice);
-
-// Ambil harga saat pertama kali dimuat
+// Fetch price every 5 seconds
 fetchPrice();
+setInterval(fetchPrice, 5000);
