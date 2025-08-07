@@ -1,19 +1,18 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XAUT/USDT Tracker</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>XAUT/USDT Live Price</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Harga XAUT/USDT Real-Time</h1>
-        <div id="price">Loading...</div>
-        <h2>Analisis Harga</h2>
-        <p id="analysis">Loading...</p>
-        <button id="refreshButton">Refresh</button>
-    </div>
-    <script src="script.js"></script>
+  <div class="container">
+    <h1>Live XAUT/USDT Price</h1>
+    <p id="price">Loading...</p>
+    <p id="analysis">Analyzing...</p>
+    <canvas id="priceChart" width="600" height="300"></canvas>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
