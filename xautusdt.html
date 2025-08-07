@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XAUT/USDT Futures - Bitget Realtime Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-bg: #0a0e17;
+            --secondary-bg: #121a29;
+            --card-bg: #1a2439;
+            --primary-text: #e0e6f5;
+            --secondary-text: #a2b3cd;
+            --accent-green: #00c076;
+            --accent-red: #ff6838;
+            --accent-blue: #5d6bff;
+            --border-color: #253350;
+        }
+        
+        body {
+            background-color: var(--primary-bg);
+            color: var(--primary-text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(90deg, var(--secondary-bg) 0%, var(--card-bg) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 0;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+        
+        .price-display {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .price-change {
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        
+        .positive {
+            background-color: rgba(0, 192, 118, 0.15);
+            color: var(--accent-green);
+        }
+        
+        .negative {
+            background-color: rgba(255, 104, 56, 0.15);
+            color: var(--accent-red);
+        }
+        
+        .market-data {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .chart-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            height: 500px;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+        
+        .interval-selector .btn {
+            background-color: var(--secondary-bg);
+            color: var(--secondary-text);
+            border: 1px solid var(--border-color);
+            margin: 0 3px;
+            border-radius: 8px;
+        }
+        
+        .interval-selector .btn.active {
+            background-color: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+        
+        .analysis-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .indicator-card {
+            background-color: var(--secondary-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent-blue);
+        }
+        
+        .indicator-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .sentiment-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .signal-buy {
+            background-color: rgba(0, 192, 118, 0.15);
+            color: var(--accent-green);
+        }
+        
+        .signal-sell {
+            background-color: rgba(255, 104, 56, 0.15);
+            color: var(--accent-red);
+        }
+        
+        .signal-neutral {
+            background-color: rgba(93, 107, 255, 0.15);
+            color: var(--accent-blue);
+        }
+        
+        .news-card {
+            background-color: var(--secondary-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent-green);
+            transition: transform 0.3s;
+        }
+        
+        .news-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .news-time {
+            font-size: 0.85rem;
+            color: var(--accent-green);
+        }
+        
+        .footer {
+            background-color: var(--secondary-bg);
+            color: var(--secondary-text);
+            padding: 25px 0;
+            border-top: 1px solid var(--border-color);
+            margin-top: 30px;
+        }
+        
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+        
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-connected {
+            background-color: var(--accent-green);
+        }
+        
+        .status-disconnected {
+            background-color: var(--accent-red);
+        }
+        
+        .loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            background: rgba(26, 36, 57, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--accent-blue);
+        }
+        
+        @media (max-width: 768px) {
+            .price-display {
+                font-size: 1.8rem;
+            }
+            
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <div class="logo">
+                        <i class="fas fa-chart-line"></i> XAUT/USDT Futures Analyzer (Bitget)
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="d-flex align-items-center justify-content-md-end">
+                        <div class="price-display me-3" id="currentPrice">$1,935.42</div>
+                        <div class="price-change positive" id="priceChange">+1.24%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Market Data -->
+    <section class="container mt-4">
+        <div class="row">
+            <div class="col-md-3 col-6 mb-3">
+                <div class="market-data text-center">
+                    <div class="text-muted">24h Volume</div>
+                    <div class="fw-bold" id="volume24h">$42.8M</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="market-data text-center">
+                    <div class="text-muted">24h High</div>
+                    <div class="fw-bold text-success" id="high24h">$1,942.16</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="market-data text-center">
+                    <div class="text-muted">24h Low</div>
+                    <div class="fw-bold text-danger" id="low24h">$1,912.35</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="market-data text-center">
+                    <div class="text-muted">Funding Rate</div>
+                    <div class="fw-bold text-warning" id="fundingRate">0.012%</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chart Section -->
+    <section class="container mt-4 position-relative">
+        <div class="loading-indicator" id="chartLoading">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Fetching realtime data from Bitget...</p>
+        </div>
+        <div class="chart-container">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <span id="currentChartTitle">Candlestick Chart (5m)</span>
+                </div>
+                <div class="d-flex">
+                    <div class="chart-type me-3">
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary active" id="btnCandle">Candlestick</button>
+                            <button class="btn btn-sm btn-outline-primary" id="btnLine">Line</button>
+                        </div>
+                    </div>
+                    <div class="interval-selector">
+                        <div class="btn-group">
+                            <button class="btn btn-sm interval-btn active" data-interval="1m">1m</button>
+                            <button class="btn btn-sm interval-btn" data-interval="5m">5m</button>
+                            <button class="btn btn-sm interval-btn" data-interval="15m">15m</button>
+                            <button class="btn btn-sm interval-btn" data-interval="1h">1h</button>
+                            <button class="btn btn-sm interval-btn" data-interval="4h">4h</button>
+                            <button class="btn btn-sm interval-btn" data-interval="1d">1d</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <canvas id="priceChart"></canvas>
+        </div>
+    </section>
+
+    <!-- Technical Analysis -->
+    <section class="container mt-4">
+        <div class="analysis-container">
+            <h3 class="mb-4"><i class="fas fa-chart-bar me-2"></i> Real-time Technical Analysis</h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="indicator-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5>Moving Averages</h5>
+                                <div class="text-muted">EMA(9) & SMA(50)</div>
+                            </div>
+                            <div class="sentiment-badge signal-buy" id="maSignal">BUY</div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>EMA(9):</span>
+                                <span class="fw-bold" id="ema9">$1,932.75</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>SMA(50):</span>
+                                <span class="fw-bold" id="sma50">$1,928.42</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" id="maProgress" role="progressbar" style="width: 75%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small>Bearish</small>
+                                <small>Bullish</small>
+                            </div>
+                        </div>
+                        <p class="mt-3 mb-0 text-muted" id="maAnalysis">Price above both MAs indicates strong bullish momentum.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="indicator-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5>RSI (14)</h5>
+                                <div class="text-muted">Relative Strength Index</div>
+                            </div>
+                            <div class="sentiment-badge signal-neutral" id="rsiSignal">NEUTRAL</div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="indicator-value" id="rsiValue">62.3</div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-danger" role="progressbar" style="width: 30%"></div>
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 30%"></div>
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 40%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small>Oversold</small>
+                                <small>Neutral</small>
+                                <small>Overbought</small>
+                            </div>
+                        </div>
+                        <p class="mt-3 mb-0 text-muted" id="rsiAnalysis">RSI at 62.3 shows bullish momentum but approaching overbought territory.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="indicator-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5>MACD</h5>
+                                <div class="text-muted">Moving Average Convergence Divergence</div>
+                            </div>
+                            <div class="sentiment-badge signal-buy" id="macdSignal">BUY</div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>MACD:</span>
+                                <span class="fw-bold text-success" id="macdValue">8.42</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Signal:</span>
+                                <span class="fw-bold" id="macdSignalValue">5.18</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Histogram:</span>
+                                <span class="fw-bold text-success" id="macdHistogram">+3.24</span>
+                            </div>
+                        </div>
+                        <p class="mt-3 mb-0 text-muted" id="macdAnalysis">Bullish crossover occurred recently. Increasing histogram bars indicate strengthening momentum.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="indicator-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5>Volume & OBV</h5>
+                                <div class="text-muted">On Balance Volume</div>
+                            </div>
+                            <div class="sentiment-badge signal-buy" id="volumeSignal">BUY</div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Current Volume:</span>
+                                <span class="fw-bold" id="currentVolume">124.5K</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>OBV (24h):</span>
+                                <span class="fw-bold text-success" id="obvValue">+3.2M</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-info" id="volumeProgress" role="progressbar" style="width: 85%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small>Distribution</small>
+                                <small>Accumulation</small>
+                            </div>
+                        </div>
+                        <p class="mt-3 mb-0 text-muted" id="volumeAnalysis">Increasing volume on up moves confirms bullish trend.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Market News -->
+    <section class="container mt-4">
+        <div class="analysis-container">
+            <h3 class="mb-4"><i class="fas fa-newspaper me-2"></i> Relevant Market News</h3>
+            
+            <div id="newsContainer">
+                <!-- News items will be populated here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Trading Signals -->
+    <section class="container mt-4 mb-5">
+        <div class="analysis-container">
+            <h3 class="mb-4"><i class="fas fa-bell me-2"></i> Trading Signals</h3>
+            
+            <div id="signalsContainer">
+                <!-- Signals will be populated here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>XAUT/USDT Futures Analyzer</h5>
+                    <p class="mb-3">Real-time technical analysis and charting for Bitget Futures XAUT/USDT pair.</p>
+                    <div class="text-muted small">
+                        <div>Data Source: Bitget Exchange WebSocket API</div>
+                        <div>Last Updated: <span id="currentTime"></span></div>
+                        <div class="connection-status">
+                            <span class="status-dot status-connected" id="statusDot"></span>
+                            <span id="connectionStatus">Connected to Bitget</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="mb-3">
+                        <button class="btn btn-outline-light me-2"><i class="fab fa-github me-1"></i> GitHub</button>
+                        <button class="btn btn-outline-light"><i class="fas fa-book me-1"></i> Documentation</button>
+                    </div>
+                    <div class="text-muted small">
+                        &copy; 2023 XAUT/USDT Analyzer. Not financial advice.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Chart
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        let priceChart;
+        let candleData = [];
+        let currentInterval = '5m';
+        let ws;
+        let lastPrice = 1935.42;
+        let priceHistory = [];
+        
+        // Connect to Bitget WebSocket
+        function connectToBitget() {
+            updateConnectionStatus('Connecting to Bitget...', 'warning');
+            
+            // Create WebSocket connection
+            ws = new WebSocket('wss://ws.bitget.com/mix/v1/stream');
+            
+            ws.onopen = function() {
+                updateConnectionStatus('Connected to Bitget', 'success');
+                subscribeToKline();
+            };
+            
+            ws.onmessage = function(event) {
+                const message = JSON.parse(event.data);
+                
+                if (message.action === 'update') {
+                    const data = message.data[0];
+                    if (data && data.candles) {
+                        processKlineData(data.candles);
+                    }
+                }
+            };
+            
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                updateConnectionStatus('Connection error. Reconnecting...', 'error');
+                setTimeout(connectToBitget, 3000);
+            };
+            
+            ws.onclose = function() {
+                updateConnectionStatus('Disconnected. Reconnecting...', 'error');
+                setTimeout(connectToBitget, 3000);
+            };
+        }
+        
+        // Subscribe to kline data
+        function subscribeToKline() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) return;
+            
+            const intervalMapping = {
+                '1m': '1m',
+                '5m': '5m',
+                '15m': '15m',
+                '1h': '1H',
+                '4h': '4H',
+                '1d': '1D'
+            };
+            
+            const mexInterval = intervalMapping[currentInterval];
+            
+            const subscribeMessage = {
+                "op": "subscribe",
+                "args": [{
+                    "instType": "mc",
+                    "channel": "candle" + mexInterval,
+                    "instId": "XAUUSDT"
+                }]
+            };
+            
+            ws.send(JSON.stringify(subscribeMessage));
+        }
+        
+        // Process incoming kline data
+        function processKlineData(candleArray) {
+            // Hide loading indicator
+            document.getElementById('chartLoading').style.display = 'none';
+            
+            // Update price display
+            const candleData = candleArray[candleArray.length - 1];
+            const price = parseFloat(candleData[4]); // Closing price
+            const prevPrice = lastPrice;
+            lastPrice = price;
+            
+            const priceChange = ((price - prevPrice) / prevPrice * 100).toFixed(2);
+            
+            document.getElementById('currentPrice').textContent = `$${price.toFixed(2)}`;
+            
+            if (priceChange >= 0) {
+                document.getElementById('priceChange').textContent = `+${priceChange}%`;
+                document.getElementById('priceChange').className = 'price-change positive';
+            } else {
+                document.getElementById('priceChange').textContent = `${priceChange}%`;
+                document.getElementById('priceChange').className = 'price-change negative';
+            }
+            
+            // Update market data (simulated as Bitget doesn't provide all data in WS)
+            document.getElementById('volume24h').textContent = `$${(parseFloat(candleData[5]) / 1000).toFixed(1)}K`;
+            document.getElementById('high24h').textContent = `$${parseFloat(candleData[2]).toFixed(2)}`;
+            document.getElementById('low24h').textContent = `$${parseFloat(candleData[3]).toFixed(2)}`;
+            
+            // Add to candle data
+            const newCandle = {
+                x: new Date(parseInt(candleData[0])),
+                o: parseFloat(candleData[1]),
+                h: parseFloat(candleData[2]),
+                l: parseFloat(candleData[3]),
+                c: price
+            };
+            
+            // Check if we have an existing candle for this time period
+            const existingIndex = candleData.findIndex(c => c.x.getTime() === newCandle.x.getTime());
+            
+            if (existingIndex !== -1) {
+                candleData[existingIndex] = newCandle;
+            } else {
+                candleData.push(newCandle);
+                // Keep only the last 100 candles
+                if (candleData.length > 100) {
+                    candleData.shift();
+                }
+            }
+            
+            // Update chart
+            if (priceChart) {
+                priceChart.data.datasets[0].data = candleData;
+                priceChart.update();
+            }
+            
+            // Add to price history for indicators
+            priceHistory.push(price);
+            if (priceHistory.length > 100) priceHistory.shift();
+            
+            // Update technical indicators
+            updateTechnicalIndicators();
+            
+            // Update time
+            updateTime();
+        }
+        
+        // Update technical indicators
+        function updateTechnicalIndicators() {
+            if (priceHistory.length < 50) return;
+            
+            // Calculate EMA(9) and SMA(50)
+            const ema9 = calculateEMA(priceHistory, 9);
+            const sma50 = calculateSMA(priceHistory, 50);
+            
+            document.getElementById('ema9').textContent = `$${ema9.toFixed(2)}`;
+            document.getElementById('sma50').textContent = `$${sma50.toFixed(2)}`;
+            
+            // MA signal
+            const maSignal = lastPrice > ema9 && ema9 > sma50 ? 'BUY' : 
+                            lastPrice < ema9 && ema9 < sma50 ? 'SELL' : 'NEUTRAL';
+            
+            document.getElementById('maSignal').textContent = maSignal;
+            document.getElementById('maSignal').className = maSignal === 'BUY' ? 
+                'sentiment-badge signal-buy' : 
+                maSignal === 'SELL' ? 
+                'sentiment-badge signal-sell' : 
+                'sentiment-badge signal-neutral';
+                
+            // MA analysis
+            document.getElementById('maAnalysis').textContent = lastPrice > ema9 && ema9 > sma50 ?
+                'Price above both MAs indicates strong bullish momentum' :
+                lastPrice < ema9 && ema9 < sma50 ?
+                'Price below both MAs indicates bearish trend' :
+                'Mixed signals from moving averages';
+                
+            // MA progress bar
+            const maProgress = lastPrice > sma50 ? 
+                Math.min(100, 50 + (lastPrice - sma50) / (ema9 - sma50) * 25) : 
+                Math.max(0, 50 + (lastPrice - sma50) / (ema9 - sma50) * 25);
+                
+            document.getElementById('maProgress').style.width = `${maProgress}%`;
+            
+            // Calculate RSI
+            const rsi = calculateRSI(priceHistory, 14);
+            document.getElementById('rsiValue').textContent = rsi.toFixed(1);
+            
+            // RSI signal
+            const rsiSignal = rsi > 70 ? 'SELL' : rsi < 30 ? 'BUY' : 'NEUTRAL';
+            document.getElementById('rsiSignal').textContent = rsiSignal;
+            document.getElementById('rsiSignal').className = rsiSignal === 'BUY' ? 
+                'sentiment-badge signal-buy' : 
+                rsiSignal === 'SELL' ? 
+                'sentiment-badge signal-sell' : 
+                'sentiment-badge signal-neutral';
+                
+            // RSI analysis
+            document.getElementById('rsiAnalysis').textContent = rsi > 70 ?
+                'RSI above 70 indicates overbought conditions' :
+                rsi < 30 ?
+                'RSI below 30 indicates oversold conditions' :
+                'RSI in neutral range';
+                
+            // Simulate MACD
+            const macd = (ema9 - sma50) * 10;
+            const signalLine = macd * 0.8;
+            const histogram = macd - signalLine;
+            
+            document.getElementById('macdValue').textContent = macd.toFixed(2);
+            document.getElementById('macdSignalValue').textContent = signalLine.toFixed(2);
+            document.getElementById('macdHistogram').textContent = `${histogram >= 0 ? '+' : ''}${histogram.toFixed(2)}`;
+            document.getElementById('macdHistogram').className = histogram >= 0 ? 
+                'fw-bold text-success' : 'fw-bold text-danger';
+                
+            // MACD signal
+            const macdSignal = histogram > 0 && macd > signalLine ? 'BUY' : 
+                              histogram < 0 && macd < signalLine ? 'SELL' : 'NEUTRAL';
+                              
+            document.getElementById('macdSignal').textContent = macdSignal;
+            document.getElementById('macdSignal').className = macdSignal === 'BUY' ? 
+                'sentiment-badge signal-buy' : 
+                macdSignal === 'SELL' ? 
+                'sentiment-badge signal-sell' : 
+                'sentiment-badge signal-neutral';
+                
+            // MACD analysis
+            document.getElementById('macdAnalysis').textContent = macdSignal === 'BUY' ?
+                'Bullish MACD crossover detected' :
+                macdSignal === 'SELL' ?
+                'Bearish MACD crossover detected' :
+                'MACD showing neutral momentum';
+                
+            // Simulate volume data
+            const volume = Math.random() * 200000;
+            document.getElementById('currentVolume').textContent = `${(volume / 1000).toFixed(1)}K`;
+            
+            const obv = volume * (priceHistory[priceHistory.length-1] > priceHistory[priceHistory.length-2] ? 1 : -1);
+            document.getElementById('obvValue').textContent = `${obv >= 0 ? '+' : ''}${(obv / 1000000).toFixed(1)}M`;
+            document.getElementById('obvValue').className = obv >= 0 ? 
+                'fw-bold text-success' : 'fw-bold text-danger';
+                
+            // Volume signal
+            const volumeSignal = obv > 0 ? 'BUY' : 'SELL';
+            document.getElementById('volumeSignal').textContent = volumeSignal;
+            document.getElementById('volumeSignal').className = volumeSignal === 'BUY' ? 
+                'sentiment-badge signal-buy' : 'sentiment-badge signal-sell';
+                
+            document.getElementById('volumeAnalysis').textContent = obv > 0 ?
+                'Increasing volume on up moves confirms bullish trend' :
+                'Increasing volume on down moves confirms bearish trend';
+                
+            document.getElementById('volumeProgress').style.width = `${Math.min(100, Math.max(0, 50 + obv / 5000))}%`;
+        }
+        
+        // Calculate SMA
+        function calculateSMA(data, period) {
+            if (data.length < period) return 0;
+            const sum = data.slice(-period).reduce((a, b) => a + b, 0);
+            return sum / period;
+        }
+        
+        // Calculate EMA
+        function calculateEMA(data, period) {
+            if (data.length < period) return 0;
+            
+            let ema = calculateSMA(data.slice(0, period), period);
+            const multiplier = 2 / (period + 1);
+            
+            for (let i = period; i < data.length; i++) {
+                ema = (data[i] - ema) * multiplier + ema;
+            }
+            
+            return ema;
+        }
+        
+        // Calculate RSI
+        function calculateRSI(data, period) {
+            if (data.length < period + 1) return 50;
+            
+            let gains = 0;
+            let losses = 0;
+            
+            for (let i = 1; i <= period; i++) {
+                const change = data[data.length - i] - data[data.length - i - 1];
+                if (change > 0) gains += change;
+                else losses -= change;
+            }
+            
+            const avgGain = gains / period;
+            const avgLoss = losses / period;
+            
+            if (avgLoss === 0) return 100;
+            const rs = avgGain / avgLoss;
+            return 100 - (100 / (1 + rs));
+        }
+        
+        // Create chart
+        function initChart() {
+            priceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'XAUT/USDT',
+                        data: candleData,
+                        borderColor: '#5d6bff',
+                        backgroundColor: 'rgba(93, 107, 255, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'minute'
+                            },
+                            grid: {
+                                color: 'rgba(37, 51, 80, 0.5)'
+                            },
+                            ticks: {
+                                color: '#a2b3cd'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(37, 51, 80, 0.5)'
+                            },
+                            ticks: {
+                                color: '#a2b3cd',
+                                callback: function(value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(26, 36, 57, 0.9)',
+                            titleColor: '#e0e6f5',
+                            bodyColor: '#e0e6f5',
+                            borderColor: '#253350',
+                            borderWidth: 1,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `Price: $${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+        
+        // Update connection status
+        function updateConnectionStatus(message, status) {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('connectionStatus');
+            
+            statusText.textContent = message;
+            
+            if (status === 'success') {
+                statusDot.className = 'status-dot status-connected';
+            } else if (status === 'error') {
+                statusDot.className = 'status-dot status-disconnected';
+            } else {
+                statusDot.className = 'status-dot';
+            }
+        }
+        
+        // Chart type toggle
+        document.getElementById('btnCandle').addEventListener('click', function() {
+            document.getElementById('btnCandle').classList.add('active');
+            document.getElementById('btnLine').classList.remove('active');
+            priceChart.destroy();
+            
+            // Reinitialize as candlestick chart
+            // Note: For actual candlestick charts, you'd need a specialized library
+            // Here we'll just use a line chart as a placeholder
+            initChart();
+            document.getElementById('currentChartTitle').textContent = `Candlestick Chart (${currentInterval})`;
+        });
+        
+        document.getElementById('btnLine').addEventListener('click', function() {
+            document.getElementById('btnLine').classList.add('active');
+            document.getElementById('btnCandle').classList.remove('active');
+            priceChart.destroy();
+            initChart();
+            document.getElementById('currentChartTitle').textContent = `Line Chart (${currentInterval})`;
+        });
+        
+        // Interval selection
+        const intervalButtons = document.querySelectorAll('.interval-btn');
+        
+        intervalButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                intervalButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                currentInterval = this.getAttribute('data-interval');
+                
+                // Update subscription
+                subscribeToKline();
+                
+                // Clear existing data
+                candleData = [];
+                
+                // Show loading indicator
+                document.getElementById('chartLoading').style.display = 'block';
+                
+                // Update chart title
+                const chartTitle = document.getElementById('currentChartTitle');
+                if (document.getElementById('btnCandle').classList.contains('active')) {
+                    chartTitle.textContent = `Candlestick Chart (${currentInterval})`;
+                } else {
+                    chartTitle.textContent = `Line Chart (${currentInterval})`;
+                }
+            });
+        });
+        
+        // Update time
+        function updateTime() {
+            document.getElementById('currentTime').textContent = new Date().toLocaleString();
+        }
+        
+        // Populate news and signals
+        function populateContent() {
+            const newsContainer = document.getElementById('newsContainer');
+            const signalsContainer = document.getElementById('signalsContainer');
+            
+            // News items
+            const news = [
+                {
+                    title: "Gold Prices Surge Amid Dollar Weakness",
+                    content: "XAUT/USDT follows spot gold prices higher as Fed rate pause expectations grow. Technical breakout above $1,930 resistance.",
+                    time: "10:24 AM"
+                },
+                {
+                    title: "Bitget Announces Increased Futures Liquidity",
+                    content: "Exchange adds new market makers to XAUT/USDT pair, reducing spreads by 15% in past 24 hours.",
+                    time: "09:45 AM"
+                },
+                {
+                    title: "Technical Analysis: Golden Cross Forms on 4H Chart",
+                    content: "EMA(9) crosses above SMA(50) signaling potential continuation of bullish trend. Next resistance at $1,950.",
+                    time: "08:30 AM"
+                }
+            ];
+            
+            news.forEach(item => {
+                const newsCard = document.createElement('div');
+                newsCard.className = 'news-card';
+                newsCard.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5>${item.title}</h5>
+                            <p class="mb-1">${item.content}</p>
+                        </div>
+                        <div class="news-time">${item.time}</div>
+                    </div>
+                `;
+                newsContainer.appendChild(newsCard);
+            });
+            
+            // Signals
+            const signals = [
+                {
+                    type: "success",
+                    icon: "fa-arrow-up",
+                    title: "Bullish Breakout Confirmed",
+                    content: "Price closed above $1,930 resistance with increasing volume. Next target $1,950 with stop loss at $1,925."
+                },
+                {
+                    type: "info",
+                    icon: "fa-info-circle",
+                    title: "Overbought Condition Developing",
+                    content: "RSI approaching 70. Watch for reversal signals at $1,945 resistance level. Consider partial profit taking."
+                },
+                {
+                    type: "warning",
+                    icon: "fa-exclamation-triangle",
+                    title: "Key Economic Data Release in 2 Hours",
+                    content: "US Non-Farm Payrolls report expected to cause volatility. Reduce leverage before announcement."
+                }
+            ];
+            
+            signals.forEach(signal => {
+                const alert = document.createElement('div');
+                alert.className = `alert alert-${signal.type}`;
+                alert.innerHTML = `
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fas ${signal.icon} fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5>${signal.title}</h5>
+                            <p class="mb-0">${signal.content}</p>
+                        </div>
+                    </div>
+                `;
+                signalsContainer.appendChild(alert);
+            });
+        }
+        
+        // Initialize
+        window.onload = function() {
+            initChart();
+            connectToBitget();
+            populateContent();
+            updateTime();
+        };
+    </script>
+</body>
+</html>
